@@ -3,9 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="assets/style.css">
     <title>Conversor de monedas</title>
 </head>
 <body>
-    
+    <section>
+        <h1>Coversor de monedas Nacional</h1><hr>
+        <div id="divContenedor">
+            <h3>Pesos CLP</h3>
+            <input type="text" id="inputCLP" placeholder="Ingrese el monto en CLP">
+            <h4>Moneda a convertir</h4>
+            <select id="monedaSeleccionada">
+                <option value="null">Seleccione Moneda</option>
+            </select>
+            <button id="btnConvertir">Convertir</button>
+            <span>...</span>
+        </div>
+        <div id="divGrafico"></div>
+    </section>
+    <script src="assets/script.js"></script>
 </body>
 </html>
