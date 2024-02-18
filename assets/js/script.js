@@ -2,12 +2,11 @@ const btnConvertir = document.getElementById('btnConvertir');
 const inputCLP = document.getElementById('inputCLP');
 const monedaSeleccionada = document.getElementById('monedaSeleccionada');
 const spanTotal = document.getElementById('spanTotal');
-const canvasGrafico = document.getElementById('grafico');
+const ctx = document.getElementById('myChart');
 const apiUrl = 'https://mindicador.cl/api/';
+let myChart;
 
-agregarOpcionesDesdeAPI();
-
-
+agregarOpcionDesdeAPI();
 btnConvertir.addEventListener('click', convertir)
 
 
@@ -22,28 +21,39 @@ async function convertir(){
     }
 }
 
-async function buscarMoneda(moneda){
-    try{
+async function buscarMoneda(moneda) {
+    try {
         const resConvertir = await fetch(`${apiUrl}${moneda}`);
-        const dataConvertir = await resConvertir.json();
-        const { serie } = dataConvertir;
-        const grafico = crearGrafico(serie.slice(0,10).reverse());
-        if(myChart){
-            myChart.destroy();
+        
+        if (!resConvertir.ok) {
+            throw new Error(`Error al obtener datos de la API: ${resConvertir.statusText}`);
         }
         
+        const dataConvertir = await resConvertir.json();
+        const { serie } = dataConvertir;
+        const grafico = dataGrafico(serie.slice(0, 10).reverse());
 
+        if (myChart) {
+            myChart.data.labels = grafico.fechaGrafico;
+            myChart.data.datasets = grafico.infoGrafico.map(({ label, borderColor, valorGrafico }) => ({
+                label,
+                borderColor,
+                data: valorGrafico
+            }));
+            myChart.update();
+        } else {
+            renderGrafico(grafico);
+        }
 
-
-        const [{valor: valorMoneda}] = serie;
+        const [{ valor: valorMoneda }] = serie;
         return valorMoneda;
-    
-    }catch (error){
-        alert('Error al obtener datos de la API:', error);
+
+    } catch (error) {
+        alert(`Error al obtener datos de la API: buscarMoneda: ${error}`);
     }
 }
 
-async function agregarOpcionesDesdeAPI() {
+async function agregarOpcionDesdeAPI() {
     try {
 
         const res = await fetch(apiUrl);
@@ -58,25 +68,33 @@ async function agregarOpcionesDesdeAPI() {
             }
         }
     } catch (error) {
-        alert('Error al obtener datos de la API:', error);
+        alert('Error al obtener datos de la API: agregarOpcionDesdeAPI', error);
     }
 }
 
-function renderGrafico(grafico){
+function renderGrafico(grafico) {
     const configurar = {
         type: "line",
-        grafico,
+        data: {
+            labels: grafico.fechaGrafico,
+            datasets: grafico.infoGrafico.map(({ label, borderColor, valorGrafico }) => ({
+                label,
+                borderColor,
+                data: valorGrafico
+            }))
+        }
     };
-    canvasGrafico.style.backgroundColor = "white";
-    if(grafico){
-        grafico.destruir();
-    }
- 
-    grafico = new chart(canvasGrafico, configurar);
 
+    // Si myChart ya está definido, destrúyelo antes de crear un nuevo gráfico
+    if (myChart) {
+        myChart.destroy();
+    }
+    ctx.style.backgroundColor = "whitesmoke";
+    // Crea una instancia de Chart.js y almacénala en la variable global myChart
+    myChart = new Chart(ctx, configurar);
 }
 
-function crearGrafico(serie){
+function dataGrafico(serie){
     const fechaGrafico = serie.map(({fecha}) => formatoFecha(fecha));
     const valorGrafico = serie.map(({valor}) => valor);
     const infoGrafico = [
