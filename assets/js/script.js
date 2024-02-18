@@ -85,12 +85,10 @@ function renderGrafico(grafico) {
         }
     };
 
-    // Si myChart ya está definido, destrúyelo antes de crear un nuevo gráfico
     if (myChart) {
         myChart.destroy();
     }
     ctx.style.backgroundColor = "whitesmoke";
-    // Crea una instancia de Chart.js y almacénala en la variable global myChart
     myChart = new Chart(ctx, configurar);
 }
 
